@@ -1,0 +1,24 @@
+# Environments & Secrets
+.env
+*.env
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+
+# Vector Database / Databases
+chroma_db/
+*.db
+*.sqlite3
+
+# Python cache files
+__pycache__/
+*.pyc
+
+.env
+.DS_Store
+__pycache__/
+*.pyc
+chroma_db/
+news.db
+myagenticenv/

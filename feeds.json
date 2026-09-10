@@ -1,0 +1,6 @@
+{
+    "feeds": [
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://rss.cnn.com/rss/edition.rss"
+    ]
+}

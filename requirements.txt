@@ -1,0 +1,13 @@
+feedparser
+sentence-transformers
+numpy
+chromadb
+newspaper3k
+langchain-text-splitters
+schedule
+python-dotenv
+langchain-tavily
+langgraph
+langchain
+fastapi
+uvicorn
