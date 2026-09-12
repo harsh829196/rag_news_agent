@@ -1,5 +1,25 @@
+import sqlite3
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from database.chromadb import collection
+from embedding import EmbeddingManager
+from processing.chunker import splitter
+
+conn = sqlite3.connect("news.db")
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS articles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    url TEXT UNIQUE,
+    source TEXT,
+    published TEXT,
+    content TEXT,
+    embedded INTEGER DEFAULT 0
+)
+""")
+conn.commit()
+
 encoding = SentenceTransformer('all-MiniLM-L6-v2')
 import json
 import feedparser #it is a library that parses RSS feeds and returns a Python object that can be easily manipulated.
@@ -329,16 +349,28 @@ def after_10minutes():
 
     print("=" * 50)
 
-import schedule
-import time
+if __name__ == "__main__":
+    import argparse
 
-# Run immediately
-after_10minutes()
+    parser = argparse.ArgumentParser(description="Ingest news articles and embeddings")
+    parser.add_argument(
+        "--watch",
+        action="store_true",
+        help="run ingestion every 10 minutes until interrupted",
+    )
+    args = parser.parse_args()
 
-# Then every 10 minutes
-schedule.every(10).minutes.do(after_10minutes)
+    after_10minutes()
 
-while True:
-    schedule.run_pending()
-    time.sleep(30)
+    if args.watch:
+        import schedule
+
+        schedule.every(10).minutes.do(after_10minutes)
+        print("Watching for new articles every 10 minutes. Press Ctrl+C to stop.")
+        try:
+            while True:
+                schedule.run_pending()
+                time.sleep(30)
+        except KeyboardInterrupt:
+            print("\nIngestion stopped.")
 

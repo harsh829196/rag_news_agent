@@ -1,9 +1,10 @@
 from langchain_tavily import TavilySearch
-from llm import model
+from llm.llm import model
 from state import State
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode, tools_condition
 from embedding import EmbeddingManager
+from database.chromadb import collection
 
 embedding_model = EmbeddingManager()
 
@@ -21,6 +22,8 @@ def retrieve_node(state: State):
     return {"retrieved_docs": docs}
 
 def is_retrieval_sufficient(state: State) -> str:
+    if not state["retrieved_docs"]:
+        return "fallback"
     best_distance = state["retrieved_docs"][0]["distance"]
     return "fallback" if best_distance > 0.35 else "generate"
 
@@ -53,13 +56,11 @@ def generate_node(state: State):
 
 def fallback_node(state: State):
     query = state["query"]
+    docs = list(state.get("retrieved_docs", []))
     
     tavily = TavilySearch(max_results=3)
     results = tavily.invoke({"query": query})
     
-    # normalize Tavily's output to the same shape as your Chroma retrieved_docs
-    # so generate_node doesn't need to know which source it came from
-    docs = []
     for r in results.get("results", []):
         docs.append({
             "text": r.get("content", ""),
